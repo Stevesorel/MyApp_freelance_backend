@@ -1,31 +1,54 @@
-
 const bcrypt = require('bcrypt')
+const { UniqueConstraintError } = require('sequelize'); // Importer l'erreur spécifique de Sequelize
 
 const User = require('../models/user')
 
-//inscription
-
-exports.register = async (request,response)=>
+// Inscription
+exports.register = async (request, response) =>
 {
-    const { name,email,telephone,site,description } = request.body;
+    // Note : Si l'utilisateur doit se connecter, le champ 'password' est essentiel
+    const { name, email, telephone, site, description } = request.body;
 
-    if(!email||!name||!telephone||!site||!description)
+    // --- 1. Validation des champs ---
+    if (!email || !name || !telephone || !site || !description)
     {
-        console.log(request.body)
-        return response.status(400).json({error:"Champs vide"});
+        // Code 400: Mauvaise requête
+        return response.status(400).json({ error: "Champs obligatoires manquants." });
     }
-    console.log(email,name,telephone,site,description)
+
     try
     {
-        const user = await User.create({name,email,telephone,site,description});
-        response.json({message:"Utilisateur cree",user:{id:user.id,name:user.name,email:user.email,telephone:user.telephone,site:user.site,description:user.description }})
-        console.log(request.body)
+        // --- 2. Création de l'utilisateur avec Sequelize ---
+        // 💡 Rappel : Si vous ajoutez un mot de passe, vous devez le hacher avec bcrypt ici !
+        
+        const user = await User.create({ name, email, telephone, site, description });
+
+        // --- 3. Succès de la création (Code 201 Created) ---
+        // Le 'return' est crucial pour n'envoyer qu'une seule réponse.
+        return response.status(201).json({
+            message: "Commande effectuée avec succès.",
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                telephone: user.telephone,
+                site: user.site,
+                description: user.description 
+            }
+        });
     }
-    catch(err)
+    catch (err)
     {
-        response.status(400).json({error:"Email deja utiliser"})
-        console.log(request.body)
+        console.error("Erreur Sequelize lors de l'inscription:", err);
+
+        // --- 4. Gestion de l'erreur de doublon spécifique à Sequelize ---
+        if (err instanceof UniqueConstraintError) {
+            // Code 409: Conflit (l'email existe déjà)
+            return response.status(409).json({ error: "Cet email est déjà utilisé." });
+        }
+        
+        // Gestion des autres erreurs (validation, connexion BD, etc.)
+        // Code 500: Erreur interne du serveur
+        return response.status(500).json({ error: "Erreur interne du serveur lors de la création de l'utilisateur." });
     }
-
-}
-
+};

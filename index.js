@@ -27,12 +27,12 @@ app.use(
 const cors = require("cors");
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: "http://10.182.199.217:5173",
   credentials: true
 }));
 
 app.use('/api/auth',authroutes);
 
-app.listen(3000,()=>{
-    console.log("Serveur demarrer sur http://localhost:3000");  
+app.listen(process.env.PORT || 4000,()=>{
+    console.log(`Serveur demarrer sur http://10.182.199.217:${process.env.PORT || 4000}`);
 })

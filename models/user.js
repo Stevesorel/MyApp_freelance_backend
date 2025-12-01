@@ -13,7 +13,7 @@ const user = instance.define("User",{
 
     telephone:
     {
-        type:DataTypes.INTEGER,
+        type:DataTypes.STRING,
         allowNull:false,
         field:"telephone"    
     },
@@ -23,7 +23,7 @@ const user = instance.define("User",{
         allowNull:false,
         field:"site"
     },
-    desription:
+    description:
     {
         type:DataTypes.STRING,
         allowNull:false,
